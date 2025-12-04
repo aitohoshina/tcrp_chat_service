@@ -57,7 +57,7 @@ def main():
       rooms[roomname].add(token)
       print("generated token:", token)
       token_bytes=token.encode("utf-8")
-      ack_header=build_tcrp_header(0,operation,state,len(token_bytes))
+      ack_header=build_tcrp_header(0,operation,ST_ack,len(token_bytes))
       print(f'ack_header: {operation}, {state}')
       packet=ack_header+token_bytes
       conn.sendall(packet)
