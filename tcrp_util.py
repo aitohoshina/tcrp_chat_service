@@ -6,7 +6,7 @@ def recv_exact(conn: socket.socket, n: int) ->bytes:
    buf=b""
    while len(buf)<n:
       chunk=conn.recv(n-len(buf))
-      if chunk=="":
+      if chunk==b"":
          raise ConnectionError ("connection closed")
       buf+=chunk
    return buf

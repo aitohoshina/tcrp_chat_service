@@ -1,5 +1,5 @@
 import socket
-from tcrp_proto import build_tcrp_header,parse_tcrp_header,OP_create,OP_join,ST_request,ST_ack,ST_done
+from tcrp_proto import build_tcrp_header,parse_tcrp_header,OP_create,OP_join,ST_request,ST_ack,ST_done,status_ok,status_error
 from tcrp_util import recv_exact
 
 def main():
@@ -20,7 +20,17 @@ def main():
    sock.sendall(packet)
 
    ack_header=recv_exact(sock,32)
-   _,operation,state,token_size=parse_tcrp_header(ack_header)
+   _,op,st,payload_size=parse_tcrp_header(ack_header)
+   ack_body=recv_exact(sock,payload_size)
+   status=ack_body[0]
+   
+   if status!=status_ok:
+      print(f'エラーが発生しました。(status={status})')
+      sock.close()
+      return   
+
+   done_header=recv_exact(sock,32)
+   _,op2,st2,token_size=parse_tcrp_header(done_header)
    token=recv_exact(sock,token_size).decode("utf-8")
    print("あなたのtokenは: ",token)
    sock.close()

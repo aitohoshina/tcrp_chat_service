@@ -1,5 +1,5 @@
 import socket
-from tcrp_proto import build_tcrp_header,parse_tcrp_header,OP_create,OP_join,ST_request,ST_ack,ST_done
+from tcrp_proto import build_tcrp_header,parse_tcrp_header,OP_create,OP_join,ST_request,ST_ack,ST_done,status_ok,status_error
 from tcrp_util import recv_exact,generate_token
 
 rooms={}
@@ -42,25 +42,45 @@ def main():
       print("roomname:", roomname)
       print("username:", username)
 
-      token=generate_token(16)
+      status=status_ok
+      token=None
+
       if operation==OP_create and state==ST_request:
          if roomname in rooms:
-            print("すでにこのルーム名は存在します")
-            conn.close()
-            return
-         rooms[roomname]=set()
+            print("存在するルームを作成しようとしました")
+            status=status_error
+            continue
+         token=generate_token()
+         rooms[roomname]={
+            "host_token":token,
+            "host_ip":address,
+            "members":{}
+         }
       elif operation==OP_join and state==ST_request:
          if not roomname in rooms:
-            print("そのルームは存在しません")
-            conn.close()
+            print("存在しないルームにjoinしようとしました")
+            status=status_error
             continue
-      rooms[roomname].add(token)
-      print("generated token:", token)
-      token_bytes=token.encode("utf-8")
-      ack_header=build_tcrp_header(0,operation,ST_ack,len(token_bytes))
-      print(f'ack_header: {operation}, {state}')
-      packet=ack_header+token_bytes
+         token=generate_token()
+         rooms[roomname]["members"][token]={
+         "ip":address,
+         "username":username
+      }
+      else:
+         print("未知のリクエストです")
+
+      status_bytes=status.to_bytes(1,"big")
+      ack_header=build_tcrp_header(0,operation,ST_ack,len(status_bytes))
+      packet=ack_header+status_bytes
       conn.sendall(packet)
+
+      if(status==status_ok and token is not None):
+         token_bytes=token.encode("utf-8")
+         done_header=build_tcrp_header(0,operation,ST_done,len(token_bytes))
+         packet=done_header+token_bytes
+         conn.sendall(packet)
+         print("generated token:", token)
+         print("トークンを送信しました")
       
       conn.close()
 

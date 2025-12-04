@@ -5,6 +5,9 @@ ST_request=0
 ST_ack=1
 ST_done=2
 
+status_ok=0
+status_error=1
+
 def build_tcrp_header(roomname_size:int,
                       operation:int,
                       state:int,
