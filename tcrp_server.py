@@ -1,8 +1,7 @@
 import socket
 from tcrp_proto import build_tcrp_header,parse_tcrp_header,OP_create,OP_join,ST_request,ST_ack,ST_done,status_ok,status_error
 from tcrp_util import recv_exact,generate_token
-
-rooms={}
+from room_store import rooms
 
 def main():
    server_sock=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -49,25 +48,26 @@ def main():
          if roomname in rooms:
             print("存在するルームを作成しようとしました")
             status=status_error
-            continue
-         token=generate_token()
-         rooms[roomname]={
-            "host_token":token,
-            "host_ip":address,
-            "members":{}
-         }
+         else:
+            token=generate_token()
+            rooms[roomname]={
+               "host_token":token,
+               "host_ip":address,
+               "members":{}
+            }
       elif operation==OP_join and state==ST_request:
          if not roomname in rooms:
             print("存在しないルームにjoinしようとしました")
             status=status_error
-            continue
-         token=generate_token()
-         rooms[roomname]["members"][token]={
-         "ip":address,
-         "username":username
-      }
+         else:
+            token=generate_token()
+            rooms[roomname]["members"][token]={
+            "ip":address,
+            "username":username
+         }
       else:
          print("未知のリクエストです")
+         status=status_error
 
       status_bytes=status.to_bytes(1,"big")
       ack_header=build_tcrp_header(0,operation,ST_ack,len(status_bytes))

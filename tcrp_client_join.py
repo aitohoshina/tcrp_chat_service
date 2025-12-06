@@ -33,5 +33,8 @@ def main():
    print("あなたのトークンは： ",token)
    sock.close()
 
+   udp_chat(roomname,token)
+
+
 if __name__=="__main__":
    main()

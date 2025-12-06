@@ -20,7 +20,7 @@ def main():
    sock.sendall(packet)
 
    ack_header=recv_exact(sock,32)
-   _,op,st,payload_size=parse_tcrp_header(ack_header)
+   _,_,_,payload_size=parse_tcrp_header(ack_header)
    ack_body=recv_exact(sock,payload_size)
    status=ack_body[0]
    
@@ -34,6 +34,8 @@ def main():
    token=recv_exact(sock,token_size).decode("utf-8")
    print("あなたのtokenは: ",token)
    sock.close()
+
+   udp_chat(room_name,token)
 
 if __name__=="__main__":
    main()

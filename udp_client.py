@@ -21,6 +21,11 @@ def main():
     data=header+body
     sock.sendto(data,(server_ip,server_port))
     print("message送信完了")
+
+    data,server_adrr=sock.recvfrom(4096)
+    message=data.decode("utf-8",errors="replace")
+    print("受信内容:",message)
+    
     sock.close()
 
 if __name__=="__main__":

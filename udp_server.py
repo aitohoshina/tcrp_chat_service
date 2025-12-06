@@ -1,17 +1,5 @@
 import socket
-
-rooms = {
-    "hoshina": {
-        "host_token": "DUMMY",
-        "host_ip": "127.0.0.1",
-        "members": {
-            "ksksksksksksksksk": {
-                "ip": "127.0.0.1",
-                "username": "test-user",
-            }
-        }
-    }
-}
+from room_store import rooms
 
 def main():
     sock=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
@@ -46,15 +34,13 @@ def main():
             continue
         print("認証完了：",member["username"],"からのメッセージは",message)
         member["udp_addr"]=address
-        message_bytes=message.encode("utf-8")
+        broadcast_message=f"{member['username']}:{message}"
+        message_bytes=broadcast_message.encode("utf-8")
 
         for t,m in room["members"].items():
             if "udp_addr" not in m:
                 continue
             sock.sendto(message_bytes,m["udp_addr"])
-
-
-        
 
 if __name__=="__main__":
     main()
